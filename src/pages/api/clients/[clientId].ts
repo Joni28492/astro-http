@@ -5,10 +5,18 @@ import { Clients, db, eq } from 'astro:db';
 
 export const GET: APIRoute = async({params, request})=>{
 
-    const clientId = params.clientId
 
-    const body = { method: 'GET', clientId }
-    return new Response(JSON.stringify(body), {status: 200,
+    const clientId = params.clientId ?? ''
+
+    const clients = await db.select().from(Clients).where(eq(Clients.id, +clientId))
+
+    if(clients.length === 0){
+        return new Response(JSON.stringify({msg: `Client with id ${clientId} not ofund`}), {status: 404,
+            headers: {'Content-Type': 'application/json'}
+        })
+    }
+
+    return new Response(JSON.stringify(clients.at(0)), {status: 200,
         headers: {
             'Content-Type': 'application/json'
         }
